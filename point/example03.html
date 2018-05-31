@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script src="../libs/common.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl')
+
+        const vsSource = `
+        attribute vec4 a_Position;
+        attribute float a_PointSize;
+        void main() {
+            gl_Position = a_Position;
+            gl_PointSize = a_PointSize;
+        }
+        `;
+        const fsSource = `
+            void main() {
+            gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+            }
+        `;
+        initShaderProgram(gl, vsSource, fsSource)
+        gl.clearColor(0.0, 0.0, 0.0, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        let a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+        if (a_Position < 0) {
+            alert('error')
+        }
+        const array = [
+            { x: 0.0, y: 0.5 },
+            { x: 0.3, y: 0.5 },
+            { x: 0.7, y: 0.9 },
+            { x: -0.4, y: 0.8 },
+            { x: 0.0, y: -0.7 },
+        ]
+        let a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+        for(let i = 0; i < array.length; i++) {
+            gl.vertexAttrib3f(a_Position, array[i].x, array[i].y, 0.0)
+            gl.vertexAttrib1f(a_PointSize, Math.abs(array[i].x + array[i].y) * 10)
+            gl.drawArrays(gl.POINTS, 0, 1)
+            /*
+                WebGL 使用的是 缓冲区 绘制结束之后， 系统将缓冲区中的内容显示上屏幕上面。缓冲区内容将被重置
+            */
+        }
+        // gl.drawArrays(gl.POINTS, 0, 5)
+    </script>
+</body>
+</html>

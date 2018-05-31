@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script src="../libs/common.js"></script>
+    <script src='../libs/gl-matrix.js'></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl')
+
+        const vsSource = `
+        attribute vec4 a_Position;
+        uniform mat4 u_xformMatrix;
+        attribute float a_PointSize;
+        void main() {
+            gl_Position = u_xformMatrix * a_Position;
+            gl_PointSize = a_PointSize;
+        }
+        `;
+        const fsSource = `
+        precision mediump float;
+        uniform vec4 u_FragColor;
+            void main() {
+            gl_FragColor = u_FragColor;
+            }
+        `;
+        initShaderProgram(gl, vsSource, fsSource)
+        gl.clearColor(0.0, 0.0, 0.0, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        let a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+        let a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+        let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
+        let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+        let angle = 0;
+        gl.uniform4f(u_FragColor, 0.0, 1, 0.0, 1)
+        gl.vertexAttrib1f(a_PointSize, 10)
+        gl.uniformMatrix4fv(u_xformMatrix, false, matrix(angle))
+
+        function initVertexBuffers(gl) {
+            var vertices = new Float32Array([
+                0.5, 0.5, 0.1, 0.6, 0.4, -0.4
+            ])
+            var vertexBuffers = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers)
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(a_Position)
+        }
+
+        function matrix(angle) {
+            var radian = Math.PI * angle / 180;
+            var cosB = Math.cos(radian);
+            var sinB = Math.sin(radian);
+
+            var transformmatrix = new Float32Array([
+                 1.0, 0.0, 0.0, 0.0,
+                 0.0, cosB, sinB,  0.0,
+                 0.0, -sinB, cosB, 0.0,
+                0.0, 0.0, 0.0, 1.0
+            ])
+            return transformmatrix
+        }
+        
+        initVertexBuffers(gl)
+        gl.drawArrays(gl.TRIANGLES, 0, 3)
+
+        document.addEventListener('keydown', (e) => {
+            console.log(e.keyCode)
+            if (e.keyCode == 38) {
+                angle ++
+                gl.uniformMatrix4fv(u_xformMatrix, false, matrix(angle));
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                gl.drawArrays(gl.TRIANGLES, 0, 3)
+            } else if (e.keyCode == 40) {
+                angle --
+                gl.uniformMatrix4fv(u_xformMatrix, false, matrix(angle));
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                gl.drawArrays(gl.TRIANGLES, 0, 3)
+            }
+        })
+    </script>
+</body>
+</html>
